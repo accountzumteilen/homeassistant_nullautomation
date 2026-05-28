@@ -1,4 +1,3 @@
-```yaml
 alias: Balkon_Nulleinspeisung_PI
 description: ""
 
@@ -113,22 +112,15 @@ variables:
   netz: >
     {{ states('sensor.smoothed_version_of_the_power_value') |
        float(0) }}
-
   aktuell: >
     {{ states('number.battery_output_power') |
        float(0) }}
 
   deadband: 15
-
   p_faktor: 0.6
   i_faktor: 0.01
-
   integral_limit: 400
-
   max_step: 150
-
   max_power: 600
   min_power: 0
-
   cooldown: 5
-```
