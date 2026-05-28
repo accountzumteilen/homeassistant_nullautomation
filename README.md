@@ -19,7 +19,7 @@ Additionally, a smoothed version of the power value is recommended:
 
 The smoothed sensor should average the last few seconds (e.g. 5–10 s) to reduce noise and fast fluctuations.
 
----
+
 
 ### 2. Controllable inverter or battery system
 
@@ -27,7 +27,7 @@ The inverter / battery output power must be writable from Home Assistant.
 
 Required entity:
 
-* `number.b2500_b2500_1_hm_b2500_b0d5_timer_1_output_power`
+* `number.battery_output_power`
 
 The entity must support:
 
@@ -35,7 +35,7 @@ The entity must support:
 
 The automation dynamically changes this value to regulate export/import power.
 
----
+
 
 ### 3. Integral helper (`input_number`)
 
@@ -54,7 +54,7 @@ Recommended settings:
 * Max: `1000`
 * Step: `1`
 
----
+
 
 ### 4. Correct sign convention
 
@@ -65,7 +65,7 @@ The automation assumes:
 
 If your meter uses the opposite convention, the control logic must be inverted.
 
----
+
 
 ### 5. Recommended system behavior
 
@@ -76,7 +76,6 @@ For stable operation, the following is recommended:
 * inverter reacts reliably to external power limit changes
 * stable Home Assistant instance with low automation latency
 
----
 
 ### 6. Initial tuning values
 
@@ -94,5 +93,5 @@ Depending on:
 * household load dynamics,
 * and sensor latency,
 
-additional tuning may be necessary.
+additional tuning is necessary.
 
