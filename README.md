@@ -68,25 +68,19 @@ If your meter uses the opposite convention, the control logic must be inverted.
 
 
 
-### 5. Recommended system behavior
-
-For stable operation, the following is recommended:
-
-* meter update interval ≤ 1 second
-* smoothed power sensor (5–10 s averaging)
-* inverter reacts reliably to external power limit changes
-* stable Home Assistant instance with low automation latency
-
-
-### 6. Initial tuning values
+### 5. Initial tuning values
 
 The included values are optimized for a typical balcony solar + battery setup:
 
+* `deadband: 15`
 * `p_faktor: 0.6`
 * `i_faktor: 0.01`
-* `deadband: 15`
-* `cooldown: 5`
+* `integral_limit: 400`
 * `max_step: 150`
+* `max_power: your maximum input power value, e.g. 800`
+* `min_power: 0`
+* `cooldown: 5`
+
 
 Depending on:
 
