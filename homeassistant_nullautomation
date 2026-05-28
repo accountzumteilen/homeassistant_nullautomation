@@ -1,0 +1,134 @@
+```yaml
+alias: Balkon_Nulleinspeisung_PI
+description: ""
+
+triggers:
+  - entity_id: sensor.put_your_power_sensor_entity_here
+    trigger: state
+
+conditions:
+  - condition: template
+    value_template: "{{ netz | abs > deadband }}"
+
+  - condition: template
+    value_template: |
+      {{ (as_timestamp(now()) -
+          as_timestamp(states.number.battery_output_power.last_changed))
+          > cooldown }}
+
+actions:
+  - variables:
+      dt: "{{ cooldown | float(1) }}"
+
+      integral_alt: >
+        {{ states('input_number.balkon_pi_integral') | float(0) }}
+
+      integral_roh: |
+        {% if netz | abs < deadband %}
+          {{ integral_alt * 0.9 }}
+        {% else %}
+          {{ integral_alt + (netz * dt) }}
+        {% endif %}
+
+      integral_begrenzt: |
+        {% if integral_roh > integral_limit %}
+          {{ integral_limit }}
+        {% elif integral_roh < -integral_limit %}
+          {{ -integral_limit }}
+        {% else %}
+          {{ integral_roh }}
+        {% endif %}
+
+      rohwert: >
+        {{ aktuell + (netz * p_faktor) +
+           (integral_begrenzt * i_faktor) }}
+
+      delta: "{{ rohwert - aktuell }}"
+
+      begrenzt_delta: |
+        {% if delta > max_step %}
+          {{ max_step }}
+        {% elif delta < -max_step %}
+          {{ -max_step }}
+        {% else %}
+          {{ delta }}
+        {% endif %}
+
+      berechnet: "{{ aktuell + begrenzt_delta }}"
+
+  - variables:
+      neuer_wert: |
+        {% if aktuell >= max_power and netz > 0 %}
+          {{ aktuell }}
+
+        {% elif aktuell <= min_power and netz < 0 %}
+          {{ aktuell }}
+
+        {% else %}
+          {% if berechnet > max_power %}
+            {{ max_power }}
+
+          {% elif berechnet < min_power %}
+            {{ min_power }}
+
+          {% else %}
+            {{ berechnet | round(0) }}
+          {% endif %}
+        {% endif %}
+
+      output_saturiert_oben: >
+        {{ (neuer_wert | float(0)) >= max_power and netz > 0 }}
+
+      output_saturiert_unten: >
+        {{ (neuer_wert | float(0)) <= min_power and netz < 0 }}
+
+      integrator_schreiben: >
+        {{ not output_saturiert_oben and
+           not output_saturiert_unten }}
+
+  - if:
+      - condition: template
+        value_template: "{{ integrator_schreiben }}"
+
+    then:
+      - target:
+          entity_id: input_number.balkon_pi_integral
+
+        data:
+          value: "{{ integral_begrenzt | round(1) }}"
+
+        action: input_number.set_value
+
+  - target:
+      entity_id: number.battery_output_power
+
+    data:
+      value: "{{ neuer_wert }}"
+
+    action: number.set_value
+
+mode: restart
+
+variables:
+  netz: >
+    {{ states('sensor.smoothed_version_of_the_power_value') |
+       float(0) }}
+
+  aktuell: >
+    {{ states('number.battery_output_power') |
+       float(0) }}
+
+  deadband: 15
+
+  p_faktor: 0.6
+  i_faktor: 0.01
+
+  integral_limit: 400
+
+  max_step: 150
+
+  max_power: 600
+  min_power: 0
+
+  cooldown: 5
+```
