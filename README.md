@@ -11,7 +11,7 @@ A power meter with real-time import/export values is required.
 
 Required entity:
 
-* `sensor.put_your_power_sensor_entity_here
+* `sensor.put_your_power_sensor_entity_here`
 
 Additionally, a smoothed version of the power value is recommended:
 
